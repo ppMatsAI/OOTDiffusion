@@ -24,37 +24,36 @@ import torch.nn.functional as F
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 from transformers import CLIPTextModel, CLIPTokenizer
 
-VIT_PATH = "../checkpoints/clip-vit-large-patch14"
-VAE_PATH = "../checkpoints/ootd"
-UNET_PATH = "../checkpoints/ootd/ootd_dc/checkpoint-36000"
-MODEL_PATH = "../checkpoints/ootd"
-
 class OOTDiffusionDC:
 
-    def __init__(self, gpu_id):
+    def __init__(self, gpu_id, pretrained_path: str):
         self.gpu_id = 'cuda:' + str(gpu_id)
 
+        model_path = f'{pretrained_path}/ootd'
+        unet_path = f'{pretrained_path}/ootd/ootd_dc/checkpoint-36000'
+        vit_path = f'{pretrained_path}/clip-vit-large-patch14'
+
         vae = AutoencoderKL.from_pretrained(
-            VAE_PATH,
+            model_path,
             subfolder="vae",
             torch_dtype=torch.float16,
         )
 
         unet_garm = UNetGarm2DConditionModel.from_pretrained(
-            UNET_PATH,
+            unet_path,
             subfolder="unet_garm",
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
         unet_vton = UNetVton2DConditionModel.from_pretrained(
-            UNET_PATH,
+            unet_path,
             subfolder="unet_vton",
             torch_dtype=torch.float16,
             use_safetensors=True,
         )
 
         self.pipe = OotdPipeline.from_pretrained(
-            MODEL_PATH,
+            model_path,
             unet_garm=unet_garm,
             unet_vton=unet_vton,
             vae=vae,
@@ -67,15 +66,15 @@ class OOTDiffusionDC:
 
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(self.pipe.scheduler.config)
         
-        self.auto_processor = AutoProcessor.from_pretrained(VIT_PATH)
-        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(VIT_PATH).to(self.gpu_id)
+        self.auto_processor = AutoProcessor.from_pretrained(vit_path)
+        self.image_encoder = CLIPVisionModelWithProjection.from_pretrained(vit_path).to(self.gpu_id)
 
         self.tokenizer = CLIPTokenizer.from_pretrained(
-            MODEL_PATH,
+            model_path,
             subfolder="tokenizer",
         )
         self.text_encoder = CLIPTextModel.from_pretrained(
-            MODEL_PATH,
+            model_path,
             subfolder="text_encoder",
         ).to(self.gpu_id)
 
