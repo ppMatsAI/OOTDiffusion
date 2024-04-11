@@ -11,10 +11,10 @@ PROJECT_ROOT = Path(__file__).absolute().parents[1].absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import time
-from preprocess.openpose.run_openpose import OpenPose
-from preprocess.humanparsing.run_parsing import Parsing
-from ootd.inference_ootd_hd import OOTDiffusionHD
-from ootd.inference_ootd_dc import OOTDiffusionDC
+from ootdiffusion.preprocess.openpose.run_openpose import OpenPose
+from ootdiffusion.preprocess.humanparsing.run_parsing import Parsing
+from ootdiffusion.ootd.inference_ootd_hd import OOTDiffusionHD
+from ootdiffusion.ootd.inference_ootd_dc import OOTDiffusionDC
 
 
 openpose_model_hd = OpenPose(0)
